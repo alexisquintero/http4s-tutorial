@@ -7,6 +7,7 @@ import org.http4s.client.blaze.BlazeClientBuilder
 import org.http4s.implicits._
 import org.http4s.server.blaze.BlazeServerBuilder
 import org.http4s.server.middleware.Logger
+import org.http4s.server.Router
 import scala.concurrent.ExecutionContext.global
 
 object QuickstartServer {
@@ -16,6 +17,7 @@ object QuickstartServer {
       client <- BlazeClientBuilder[F](global).stream
       helloWorldAlg = HelloWorld.impl[F]
       jokeAlg = Jokes.impl[F](client)
+      tweetAlg = Tweets.impl[F]
 
       // Combine Service Routes into an HttpApp.
       // Can also be done via a Router if you
@@ -23,7 +25,8 @@ object QuickstartServer {
       // in the underlying routes.
       httpApp = (
         QuickstartRoutes.helloWorldRoutes[F](helloWorldAlg) <+>
-        QuickstartRoutes.jokeRoutes[F](jokeAlg)
+        QuickstartRoutes.jokeRoutes[F](jokeAlg) <+>
+        Router("/api/" -> QuickstartRoutes.tweetRoutes[F](tweetAlg))
       ).orNotFound
 
       // With Middlewares in place

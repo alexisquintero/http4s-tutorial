@@ -30,4 +30,15 @@ object QuickstartRoutes {
         } yield resp
     }
   }
+
+  def tweetRoutes[F[_]: Sync](T: Tweets[F]): HttpRoutes[F] = {
+    val dsl = new Http4sDsl[F]{}
+    import dsl._
+    HttpRoutes.of[F] {
+      case GET -> Root / "tweets" / "popular" =>
+        T.getPopularTweets().flatMap(Ok(_))
+      case GET -> Root / "tweets" / IntVar(tweetId) =>
+        T.getTweet(tweetId).flatMap(Ok(_))
+    }
+  }
 }
